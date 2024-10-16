@@ -1,8 +1,7 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +37,47 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.float_up();
+    }
+
+    fn float_up(&mut self) {
+        let mut curr_idx = self.len();
+        while curr_idx > 1 {
+            let parent_idx = self.parent_idx(curr_idx);
+            if (self.comparator)(&self.items[parent_idx], &self.items[curr_idx]) {
+                break;
+            } else {
+                self.items.swap(curr_idx, parent_idx);
+                curr_idx = parent_idx;
+            }
+        }
+    }
+
+    pub fn pop(&mut self) -> Option<T> {
+        let end_idx = self.len();
+        if self.len() >= 1 {
+            self.items.swap(1, end_idx);
+            let pop_e = self.items.pop();
+            self.count -= 1;
+            self.maintain(1);
+            return pop_e;
+        } else {
+            None
+        }
+    }
+
+    fn maintain(&mut self, idx: usize) {
+        let s_child = self.smallest_child_idx(idx);
+        if self.children_present(idx) {
+            if !(self.comparator)(&self.items[idx], &self.items[s_child]) {
+                self.items.swap(idx, s_child);
+            }
+            self.maintain(s_child);
+        } else {
+            return;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +98,24 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        let left_child_idx = self.left_child_idx(idx);
+        let right_child_idx = self.right_child_idx(idx);
+        if self.children_present(idx) {
+            if right_child_idx <= self.len() {
+                //right child exists
+                if (self.comparator)(&self.items[left_child_idx], &self.items[right_child_idx]) {
+                    return left_child_idx;
+                } else {
+                    return right_child_idx;
+                }
+            } else {
+                //only left child
+                return left_child_idx;
+            }
+        } else {
+            //leave node
+            return 0;
+        }
     }
 }
 
@@ -85,7 +142,7 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        self.pop()
     }
 }
 
@@ -129,9 +186,12 @@ mod tests {
         heap.add(2);
         heap.add(9);
         heap.add(11);
+        println!("{:?}", heap.items);
         assert_eq!(heap.len(), 4);
         assert_eq!(heap.next(), Some(2));
+        println!("{:?}", heap.items);
         assert_eq!(heap.next(), Some(4));
+        println!("{:?}", heap.items);
         assert_eq!(heap.next(), Some(9));
         heap.add(1);
         assert_eq!(heap.next(), Some(1));
